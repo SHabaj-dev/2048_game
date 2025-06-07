@@ -1,5 +1,7 @@
 package com.klikto.twozerofoureight.presentation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -11,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -46,6 +49,16 @@ fun GameScreen(
     var dragStartY by remember { mutableStateOf(0f) }
     var dragEndX by remember { mutableStateOf(0f) }
     var dragEndY by remember { mutableStateOf(0f) }
+    var previousScore by remember { mutableStateOf(boardState.score) }
+    val scoreAnimation = remember { Animatable(0f) }
+
+    LaunchedEffect(boardState.score) {
+        if (boardState.score > previousScore) {
+            scoreAnimation.snapTo(1f)
+            scoreAnimation.animateTo(0f, animationSpec = tween(500))
+        }
+        previousScore = boardState.score
+    }
 
     Scaffold(
         topBar = {
@@ -54,7 +67,8 @@ fun GameScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "Score: ${boardState.score}",
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.scale(1f + scoreAnimation.value * 0.2f)
                         )
                         Text(
                             text = "Best: $highScore",
@@ -169,14 +183,45 @@ private fun GameBoard(
             ) {
                 for (col in 0 until boardState.size) {
                     val value = boardState.tiles[row * boardState.size + col]
-                    GameCell(
+                    val key = "${row}_${col}_${value}"
+                    AnimatedGameCell(
                         value = value,
-                        modifier = Modifier.size(cellSize)
+                        modifier = Modifier.size(cellSize),
+                        key = key
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun AnimatedGameCell(
+    value: Int,
+    modifier: Modifier = Modifier,
+    key: String
+) {
+    var isNew by remember { mutableStateOf(true) }
+    val scale = remember { Animatable(0f) }
+    
+    LaunchedEffect(key) {
+        if (isNew) {
+            scale.snapTo(0f)
+            scale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+            isNew = false
+        }
+    }
+
+    GameCell(
+        value = value,
+        modifier = modifier.scale(scale.value)
+    )
 }
 
 @Composable
