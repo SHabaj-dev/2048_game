@@ -121,8 +121,9 @@ class GameEngineImpl(
 
         addRandomTile(newTiles)
         
+        val tempState = BoardState(state.size, newTiles, score)
         val hasWon = newTiles.any { it >= 2048 }
-        val isGameOver = !hasValidMoves(newTiles, state.size)
+        val isGameOver = !hasValidMoves(tempState)
 
         return BoardState(
             size = state.size,
@@ -185,7 +186,10 @@ class GameEngineImpl(
         tiles[emptyCells[random.nextInt(emptyCells.size)]] = value
     }
 
-    private fun hasValidMoves(tiles: IntArray, size: Int): Boolean {
+    override fun hasValidMoves(state: BoardState): Boolean {
+        val tiles = state.tiles
+        val size = state.size
+        
         // Check for empty cells
         if (tiles.any { it == 0 }) return true
 
@@ -199,8 +203,8 @@ class GameEngineImpl(
         }
 
         // Check for possible merges vertically
-        for (row in 0 until size - 1) {
-            for (col in 0 until size) {
+        for (col in 0 until size) {
+            for (row in 0 until size - 1) {
                 if (tiles[row * size + col] == tiles[(row + 1) * size + col]) {
                     return true
                 }

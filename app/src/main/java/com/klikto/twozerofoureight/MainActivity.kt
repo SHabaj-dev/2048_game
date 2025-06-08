@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.activity.OnBackPressedCallback
+import com.klikto.twozerofoureight.domain.model.BoardState
 import com.klikto.twozerofoureight.presentation.GameScreen
 import com.klikto.twozerofoureight.presentation.GameViewModel
 import com.klikto.twozerofoureight.presentation.ModeSelectScreen
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
                     val highScore by gameViewModel.highScore.collectAsState()
                     val canUndo by gameViewModel.canUndo.collectAsState()
                     val canRedo by gameViewModel.canRedo.collectAsState()
+                    val isGameOver by gameViewModel.isGameOver.collectAsState()
 
                     // Handle back press
                     DisposableEffect(Unit) {
@@ -109,29 +111,18 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         Screen.Game -> {
-                            boardState?.let { state ->
-                                GameScreen(
-                                    boardState = state,
-                                    highScore = highScore,
-                                    canUndo = canUndo,
-                                    canRedo = canRedo,
-                                    onSwipe = { direction ->
-                                        gameViewModel.swipe(direction)
-                                    },
-                                    onUndo = {
-                                        gameViewModel.undo()
-                                    },
-                                    onRedo = {
-                                        gameViewModel.redo()
-                                    },
-                                    onRestart = {
-                                        currentScreen = Screen.ModeSelect
-                                    },
-                                    onQuit = {
-                                        currentScreen = Screen.ModeSelect
-                                    }
-                                )
-                            }
+                            GameScreen(
+                                boardState = boardState ?: BoardState(4, IntArray(16), 0),
+                                highScore = highScore,
+                                canUndo = canUndo,
+                                canRedo = canRedo,
+                                isGameOver = isGameOver,
+                                onSwipe = { direction -> gameViewModel.swipe(direction) },
+                                onUndo = { gameViewModel.undo() },
+                                onRedo = { gameViewModel.redo() },
+                                onRestart = { gameViewModel.restart() },
+                                onQuit = { currentScreen = Screen.ModeSelect }
+                            )
                         }
                     }
                 }

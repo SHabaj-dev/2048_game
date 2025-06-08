@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import com.klikto.twozerofoureight.R
 import com.klikto.twozerofoureight.domain.model.BoardState
 import com.klikto.twozerofoureight.domain.model.Direction
+import com.klikto.twozerofoureight.ui.components.dialogs.GameOverDialog
+import com.klikto.twozerofoureight.ui.theme.Dimensions
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -38,6 +40,7 @@ fun GameScreen(
     highScore: Long,
     canUndo: Boolean,
     canRedo: Boolean,
+    isGameOver: Boolean,
     onSwipe: (Direction) -> Unit,
     onUndo: () -> Unit,
     onRedo: () -> Unit,
@@ -58,6 +61,14 @@ fun GameScreen(
             scoreAnimation.animateTo(0f, animationSpec = tween(500))
         }
         previousScore = boardState.score
+    }
+
+    if (isGameOver) {
+        GameOverDialog(
+            boardState = boardState,
+            onRestart = onRestart,
+            onQuit = onQuit
+        )
     }
 
     Scaffold(

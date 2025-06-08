@@ -60,4 +60,9 @@ interface GameEngine {
      * @return true if there are moves to redo
      */
     fun canRedo(): Boolean
-} 
+
+    /**
+     * Checks if there are any valid moves left on the board.
+     */
+    fun hasValidMoves(state: BoardState): Boolean
+}

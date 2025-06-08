@@ -37,6 +37,15 @@ class GameViewModel(
     private val _canRedo = MutableStateFlow(false)
     val canRedo: StateFlow<Boolean> = _canRedo.asStateFlow()
 
+    private val _isGameOver = MutableStateFlow(false)
+    val isGameOver: StateFlow<Boolean> = _isGameOver.asStateFlow()
+
+    private fun checkGameOver() {
+        val currentState = _boardState.value ?: return
+        val hasValidMoves = gameEngine?.hasValidMoves(currentState) ?: true
+        _isGameOver.value = !hasValidMoves
+    }
+
     init {
         // Restore board size from saved state or default to 4
         val boardSize = savedStateHandle.get<Int>("board_size") ?: 4
@@ -67,6 +76,7 @@ class GameViewModel(
             _boardState.value = engine.swipe(direction)
             updateUndoRedoState()
             checkHighScore()
+            checkGameOver()
         }
     }
 
@@ -97,6 +107,7 @@ class GameViewModel(
         gameEngine?.let { engine ->
             _boardState.value = engine.restart()
             updateUndoRedoState()
+            _isGameOver.value = false
         }
     }
 
